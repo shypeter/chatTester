@@ -212,32 +212,6 @@ class Monitor {
         }
     }
 
-    // 輔助方法：等待指定時間
-    async wait(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-    
-    // 輔助方法：檢查元素是否可互動
-    async isElementInteractable(selector) {
-        return await this.page.evaluate((sel) => {
-            const el = document.querySelector(sel);
-            if (!el) return false;
-            
-            const style = window.getComputedStyle(el);
-            const isVisible = style.display !== 'none' && 
-                            style.visibility !== 'hidden' && 
-                            style.opacity !== '0';
-                            
-            const rect = el.getBoundingClientRect();
-            const isInViewport = rect.top >= 0 &&
-                                rect.left >= 0 &&
-                                rect.bottom <= window.innerHeight &&
-                                rect.right <= window.innerWidth;
-                                
-            return isVisible && isInViewport;
-        }, selector);
-    }
-
     async openUrl() {
         try {
             // 監控 Direct Messages
