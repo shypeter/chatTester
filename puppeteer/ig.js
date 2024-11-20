@@ -228,67 +228,7 @@ class Monitor {
         this.responseType = responseType;
         try {
             await fs.mkdir('./log', { recursive: true });
-
-            // 1. 檢查 DOM 元素是否存在
-            //const hasMessageContainer = await this.page.evaluate(() => {
-            //    const container = document.querySelector('div[role="grid"]');
-            //    console.log('Message container found:', !!container); // 瀏覽器內的 log
-            //    return {
-            //        exists: !!container,
-            //        role: container?.getAttribute('role'),
-            //        childCount: container?.childNodes.length
-            //    };
-            //});
-            //console.log('Container status:', hasMessageContainer); // Node.js 內的 log
-
-            // 2. 驗證 Observer 設置
-            //const observerStatus = await this.page.evaluate(() => {
-            //    try {
-            //        const targetString = '抱歉';
-            //        let observerWorking = false;
-            //        
-            //        // 測試用的監聽器
-            //        const testObserver = new MutationObserver((mutations) => {
-            //            console.log('Observer triggered:', mutations.length);
-            //            observerWorking = true;
-            //        });
-            //        
-            //        const messageContainer = document.querySelector('div[role="grid"]');
-            //        if (!messageContainer) {
-            //            throw new Error('Container not found');
-            //        }
-            //        
-            //        testObserver.observe(messageContainer, {
-            //            childList: true,
-            //            subtree: true
-            //        });
-            //        
-            //        // 模擬一個 DOM 變化來測試 Observer
-            //        const testDiv = document.createElement('div');
-            //        testDiv.textContent = 'Test message';
-            //        messageContainer.appendChild(testDiv);
-            //        
-            //        // 清理測試用的 Observer
-            //        setTimeout(() => {
-            //            testObserver.disconnect();
-            //            testDiv.remove();
-            //        }, 100);
-            //        
-            //        return {
-            //            status: 'Observer setup success',
-            //            containerFound: true,
-            //            observerWorking
-            //        };
-            //    } catch (error) {
-            //        return {
-            //            status: 'Observer setup failed',
-            //            error: error.message
-            //        };
-            //    }
-            //});
-            //console.log('Observer setup status:', observerStatus);
-
-            // 3. 監控實際訊息處理
+            // 1. 監控實際訊息處理
             this.isMonitoring = true;
             await this.page.evaluate(() => {
                 // 使用 debug object 來追蹤狀態
@@ -337,7 +277,7 @@ class Monitor {
                 }
             });
 
-            // 4. 定期檢查 debug 資訊
+            // 2. 定期檢查 debug 資訊
             const targetStr = '阿羅哈您好';
             const targetStr2 = '阿羅哈愛爾麗';
             const targetStr3 = '阿羅哈Hi!';

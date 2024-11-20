@@ -33,7 +33,7 @@ class Auth {
             `${this.cookiesPath}messenger_cookies.json`,
             JSON.stringify(cookies, null, 2)
         );
-        console.log(`${platform} cookies 已保存`);
+        //console.log(`${platform} cookies 已保存`);
     }
 
     // 載入 cookies
@@ -161,9 +161,9 @@ class Monitor {
         this.logFile = './log/messages.log';
 
         // 監聽所有 console 訊息
-        this.page.on('console', msg => {
-            console.log('Browser console:', msg.text());
-        });
+        //this.page.on('console', msg => {
+        //    console.log('Browser console:', msg.text());
+        //});
     }
 
     async cleanup() {
@@ -189,7 +189,7 @@ class Monitor {
     async sendMessage(message) {
         this.input = message;
         try {
-            console.log('開始發送訊息流程...');
+            //console.log('開始發送訊息流程...');
             
             // 0. 等待直到 pin input 元素消失
             let attempts = 0;
@@ -203,7 +203,7 @@ class Monitor {
                     break;
                 }
 
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise(resolve => setTimeout(resolve, 10000));
                 attempts++;
 
                 if (attempts === maxAttempts) {
@@ -271,12 +271,12 @@ class Monitor {
             });
 
             if (pinInputExists) {
-                console.log('等待輸入 PIN 碼...');
+                //console.log('等待輸入 PIN 碼...');
                 const pin = '771200';
                 await this.page.type('#mw-numeric-code-input-prevent-composer-focus-steal', pin);
             }
 
-            console.log('網址已開啟');
+            //console.log('網址已開啟');
         } catch (error) {
             console.error('打開網址失敗:', error);
             throw error;
@@ -288,7 +288,7 @@ class Monitor {
         try {
             await fs.mkdir('./log', { recursive: true });
 
-            // 3. 監控實際訊息處理
+            // 1. 監控實際訊息處理
             this.isMonitoring = true;
             await this.page.evaluate(() => {
                 // 使用 debug object 來追蹤狀態
@@ -307,8 +307,6 @@ class Monitor {
 
                                     // Alternative selector using class names
                                     const messages = node.querySelectorAll('.x78zum5.xdt5ytf.x1n2onr6[role="gridcell"]');
-                                    console.log(messages);
-
                                     messages.forEach(message => {
                                         const text = message.innerText;
                                         if (text && text.trim()) {
@@ -316,7 +314,7 @@ class Monitor {
                                                 text: text.trim(),
                                                 timestamp: new Date().toISOString()
                                             };
-                                            console.log('New message:', text.trim());
+                                            //console.log('New message:', text.trim());
                                         }
                                     });
                                 }
@@ -331,23 +329,6 @@ class Monitor {
                     }
                 });
 
-                // 尋找訊息容器
-                //const messageContainer = document.querySelector('div[aria-label="Messages in conversation with Develope club"]');
-                //if (messageContainer) {
-                //    observer.observe(messageContainer, {
-                //        childList: true,
-                //        subtree: true,
-                //        characterData: true
-                //    });
-                //    console.log('Started monitoring Messenger messages');
-                //} else {
-                //    console.error('Messenger message container not found');
-                //    window.debugInfo.errors.push({
-                //        message: 'Message container not found',
-                //        timestamp: new Date().toISOString()
-                //    });
-                //}
-
                 // Updated selector for message container
                 const messageContainer = document.querySelector('div[role="main"]');
                 if (messageContainer) {
@@ -356,7 +337,7 @@ class Monitor {
                         subtree: true,
                         characterData: true
                     });
-                    console.log('Started monitoring Messenger messages');
+                    //console.log('Started monitoring Messenger messages');
                 } else {
                     console.error('Messenger message container not found');
                     window.debugInfo.errors.push({
@@ -366,12 +347,11 @@ class Monitor {
                 }
             });
 
-            // 4. 定期檢查訊息
-            const targetStr = '阿羅哈您好';
-            const targetStr2 = '阿羅哈愛爾麗';
-            const targetStr3 = '阿羅哈Hi!';
-            const waitStr = '你傳送了IGD';
-            const botName = 'Develope club'; // Messenger 機器人的名稱
+            // 2. 定期檢查訊息
+            const targetStr = 'Develope club\n您好';
+            const targetStr2 = 'Develope club\n愛爾麗';
+            const targetStr3 = 'Develope club\nHi!';
+            const waitStr = 'You sent\n';
             while (this.isMonitoring) {
                 const debugInfo = await this.page.evaluate(() => {
                     const info = window.debugInfo;
@@ -392,11 +372,46 @@ class Monitor {
                     return message;
                 });
 
+                if (msg != null) {
+                    if (msg.text.startsWith(waitStr)) {
+                        //do nothing
+                        this.logMessage(`Waitting response...`);
+                    } else if (
+                        (this.responseType == 'A') &&
+                        ["介紹", "hi"].includes(this.input) &&
+                        (msg.text.startsWith(targetStr) || msg.text.startsWith(targetStr2))
+                    ) {
+                        //pass
+                        this.resSuccess++;
+
+                        this.logMessage(`Type ${this.responseType} : ${this.input} - O`);
+                        await this.sendMessage('hi');
+                    } else if (
+                        (this.responseType == 'B') &&
+                        (
+                            ((this.input == '介紹') && (msg.text.startsWith(targetStr) || msg.text.startsWith(targetStr2))) ||
+                            ((this.input == 'hi') && msg.text.startsWith(targetStr3))
+                        )
+                    ) {
+                        //pass
+                        this.resSuccess++;
+
+                        this.logMessage(`Type ${this.responseType} : ${this.input} - O`);
+                        await this.sendMessage('hi');
+                    } else {
+                        //fail
+                        this.resFail++;
+
+                        this.logMessage(`Type ${this.responseType} : ${this.input} - X`);
+                    }
+                }
+
                 //console.log('最新訊息:', msg);
 
-                //if (this.resSuccess + this.resFail >= 2) {
-                //    break;
-                //}
+                if (this.resSuccess + this.resFail >= 2) {
+                    break;
+                }
+
                 await new Promise(resolve => setTimeout(resolve, 1000));
             }
             return [this.resSuccess, this.resFail];
@@ -423,6 +438,7 @@ async function main() {
         await monitor.sendMessage('介紹');
         const [success, fail] = await monitor.monitorMessage(responseType);
         console.log(`Passed: ${success}, Failed: ${fail}`);
+        //auth.saveCookies('messenger');
         await monitor.cleanup();
         await browser.close();
         process.exit(0);

@@ -79,9 +79,6 @@ def tester(platform, type):
             'paltform': platform,
             'type': type
         }), 500
-    return jsonify({'message': 'The server is running'})
-
-
 
 if __name__ == '__main__':
     app.run(debug=False)
