@@ -21,7 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: 'Missing platform or type' });
     }
 
-    if (typeof platform !== 'string' || !['ig', 'fb'].includes(platform)) {
+    if (typeof platform !== 'string' || !['ig', 'fb', 'line'].includes(platform)) {
         return res.status(400).json({ error: 'Invalid platform, need ig or fb' });
     }
 
@@ -33,6 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         switch (platform) {
             case 'fb':
             case 'ig':
+            case 'line':
                 const result = await tester(platform, type);
                 res.status(200).json(result);
                 break;

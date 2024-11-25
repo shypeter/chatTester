@@ -4,6 +4,7 @@ import { useState } from 'react';
 interface TriggerRes {
     igResult: any;
     fbResult: any;
+    lineResult: any;
     error?: string;
 }
 
@@ -26,9 +27,12 @@ export default function Trigger() {
             const fbResult = await fbRes.json();
             const igResult = await igRes.json();
 
-            setResult({ igResult, fbResult });
+            const lineRes = await fetch('/api/Trigger?platform=line&type=' + type);
+            const lineResult = await lineRes.json();
+
+            setResult({ igResult, fbResult, lineResult });
         } catch (err) {
-            setResult({ igResult: null, fbResult: null, error: err instanceof Error ? err.message : 'An error occurred' });
+            setResult({ igResult: null, fbResult: null, lineResult: null, error: err instanceof Error ? err.message : 'An error occurred' });
         } finally {
             setLoading(false);
         }
@@ -70,7 +74,7 @@ export default function Trigger() {
                     cursor: loading ? 'not-allowed' : 'pointer'
                 }}
             >
-                {loading ? '處理中...' : '同時執行IG, FB'}
+                {loading ? '處理中...' : '同時執行 Facebook, Instagram, Line'}
             </button>
 
             {result && (
@@ -83,6 +87,7 @@ export default function Trigger() {
                             <div className="space-y-2">
                                 <p>fb 結果： {formatJson(result.fbResult)}</p>
                                 <p>ig 結果：{formatJson(result.igResult)}</p>
+                                <p>line 結果：{formatJson(result.lineResult)}</p>
                             </div>
                         </>
                     )}

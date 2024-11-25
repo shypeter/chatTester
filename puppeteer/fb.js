@@ -53,79 +53,30 @@ class Auth {
         }
     }
 
-    // facebook 登入處理
-    async facebookLogin(username, password) {
+    async waitForManualLogin() {
         try {
             await this.page.goto('https://www.messenger.com/login.php', {
                 waitUntil: 'networkidle0'
             });
 
-            // 檢查是否已經登入
-            const isLoggedIn = await this.page.$('input[name="email"]') === null;
-            if (isLoggedIn) {
-                console.log('已經登入 facebook');
+            console.log('請手動登入 Facebook...');
+            console.log('登入完成後，請在命令列輸入 "save" 來儲存 cookie');
+
+            const answer = await question('輸入指令 (save): ');
+            if (answer.toLowerCase() === 'save') {
+                await this.saveCookies('messenger');
+                console.log('登入狀態已儲存，請重新執行程式開始測試流程');
                 return true;
             }
-
-            // 輸入帳號密碼
-            await this.page.type('input[name="email"]', username);
-            await this.page.type('input[name="pass"]', password);
-            await this.page.click('input[type="checkbox"][name="persistent"]');
-            await this.page.click('button[type="submit"]');
-
-            // 等待並點擊「繼續」按鈕
-            await this.page.waitForSelector('._42ft._4jy0._5f0v._3-mv._9g9c._4jy4._517h._51sy');
-            await this.page.click('._42ft._4jy0._5f0v._3-mv._9g9c._4jy4._517h._51sy');
-
-            await this.page.waitForSelector('#approvals_code');
-            const rl = readline.createInterface({
-                input: process.stdin,
-                output: process.stdout
-            });
-
-            // 提示用戶輸入簡訊驗證碼
-            const code = await new Promise((resolve) => {  
-                rl.question('請輸入簡訊驗證碼: ', (answer) => {
-                    resolve(answer);
-                    rl.close();
-                });
-            });
-
-            await this.page.type('#approvals_code', code);
-            await this.page.click('#checkpointSubmitButton');
-
-            // 等待 PIN 碼輸入框出現
-            await this.page.waitForSelector('#mw-numeric-code-input-prevent-composer-focus-steal');
-
-            // 建立新的命令列介面
-            const rl2 = readline.createInterface({
-                input: process.stdin,
-                output: process.stdout
-            });
-
-            // 提示用戶輸入 PIN 碼
-            const pin = await new Promise((resolve) => {
-                rl2.question('請輸入 6 位數 PIN 碼: ', (answer) => {
-                    resolve(answer);
-                    rl2.close();
-                });
-            });
-
-            // 輸入 PIN 碼
-            await this.page.type('#mw-numeric-code-input-prevent-composer-focus-steal', pin);
-
-            await this.saveCookies('messenger');
-            console.log("Facebook 登入成功");
-            return true;
-
+            return false;
         } catch (error) {
-            console.error('facebook 登入失敗:', error);
+            console.error('等待手動登入時發生錯誤:', error);
             return false;
         }
     }
 
     // 主要執行函數
-    async run() {
+    async run(isLoginMode = false) {
         const browser = await puppeteer.launch({
             headless: false,
             args: [
@@ -138,16 +89,21 @@ class Auth {
         await this.page.setViewport({ width: 1280, height: 800 });
         await this.ensureCookiesDirectory();
 
-        // facebook 登入流程
-        let facebookLoggedIn = await this.loadCookies('facebook');
-        if (!facebookLoggedIn) {
-            const fbUsername = await question('請輸入 facebook 帳號: ');
-            const fbPassword = await question('請輸入 facebook 密碼: ');
-            facebookLoggedIn = await this.facebookLogin(fbUsername, fbPassword);
+        if (isLoginMode) {
+            const loginSuccess = await this.waitForManualLogin();
+            rl.close();
+            await browser.close();
+            return {success: loginSuccess };
+        } else {
+            const cookiesLoaded = await this.loadCookies('messenger');
+            if (!cookiesLoaded) {
+                console.log('請先執行登入模式儲存 cookies');
+                rl.close();
+                await browser.close();
+                return {success: false};
+            }
+            return {browser, page: this.page, success: true};
         }
-
-        rl.close();
-        return {browser, page: this.page};
     }
 }
 
@@ -428,8 +384,26 @@ async function main() {
     let monitor;
 
     try {
+        // node fb.js login
+        // node fb.js A
         const auth = new Auth();
-        const result = await auth.run();
+        const isLoginMode = process.argv[2] === 'login';
+        const result = await auth.run(isLoginMode);
+
+        if (isLoginMode) {
+            if (result.success) {
+                console.log('登入成功並儲存 cookies');
+            } else {
+                console.log('登入失敗');
+            }
+            process.exit(result.success ? 0 : 1);
+        }
+
+        if (!result.success) {
+            console.log('請先執行登入模式');
+            process.exit(1);
+        }
+
         browser = result.browser;
         monitor = new Monitor(result.page);
         responseType = process.argv[2];
