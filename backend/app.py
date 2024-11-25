@@ -19,29 +19,51 @@ def tester(platform, type):
         # get the current directory
         current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-        # get the path of the node script
-        script_path = os.path.join(current_dir, 'puppeteer', f'{platform}.js')
+        if platform == 'line':
+            script_path = os.path.join(current_dir, 'backend', 'line.py')
 
-        # check if the script exists
-        if not os.path.exists(script_path):
-            return jsonify({
-                'status': 'error',
-                'error': f'Script not found: {script_path}',
-                'platform': platform,
-                'type': type
-            }), 404
+            if not os.path.exists(script_path):
+                return jsonify({
+                    'status': 'error',
+                    'error': f'Script not found: {script_path}',
+                    'platform': platform,
+                    'type': type
+                }), 404
+
+            # 使用虛擬環境的 Python（根據你的實際路徑修改）
+            venv_python = r"C:\Users\petec\Desktop\workspace\AITester\backend\venv\Scripts\python.exe"
+            process = subprocess.run(
+                [venv_python, script_path, type],
+                capture_output=True,
+                text=True,
+                timeout=600,
+                cwd=os.path.join(current_dir, 'backend')
+            )
+
+        else :
+            # get the path of the node script
+            script_path = os.path.join(current_dir, 'puppeteer', f'{platform}.js')
+
+            # check if the script exists
+            if not os.path.exists(script_path):
+                return jsonify({
+                    'status': 'error',
+                    'error': f'Script not found: {script_path}',
+                    'platform': platform,
+                    'type': type
+                }), 404
         
-        # 變更工作目錄到 puppeteer 資料夾 (如果腳本中有相對路徑的引用)
-        puppeteer_dir = os.path.join(current_dir, 'puppeteer')
+            # 變更工作目錄到 puppeteer 資料夾 (如果腳本中有相對路徑的引用)
+            puppeteer_dir = os.path.join(current_dir, 'puppeteer')
 
-        # exec node script
-        process = subprocess.run(
-            ['node', script_path, type],
-            capture_output=True,
-            text=True,
-            timeout=600,
-            cwd=puppeteer_dir
-        )
+            # exec node script
+            process = subprocess.run(
+                ['node', script_path, type],
+                capture_output=True,
+                text=True,
+                timeout=600,
+                cwd=puppeteer_dir
+            )
 
         if process.returncode == 0:
             output = process.stdout
