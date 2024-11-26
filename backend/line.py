@@ -214,11 +214,15 @@ def main():
     
     successCount = 0
     failCount = 0
-    controller.send_message("aloha")
+
+    controller.send_message("說笑話")
     time.sleep(8)
     text = controller.get_latest_content()
-    if "Aloha" in text:
-       successCount += 1 
+    #print(text)
+    if "當 然 可 以" in text:
+       successCount += 1
+    elif "娛樂" in text:
+        successCount += 1
     else:
        failCount += 1
    
@@ -227,12 +231,14 @@ def main():
     text = controller.get_latest_content()
     #print(text)
     if responseType == 'A':
-        if "你 好" in text:
+        conditions = ["你 好", "您 好"]
+        if any(condition in text for condition in conditions):
             successCount += 1
         else:
             failCount += 1
     elif responseType == 'B':
-        if "developeclub 呈 回" in text:
+        conditions = ["呈 回", "+ Qag"]
+        if any(condition in text for condition in conditions):
             successCount += 1
         else:
             failCount += 1
