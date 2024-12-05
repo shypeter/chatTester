@@ -37,6 +37,7 @@ def tester(platform, type):
                 capture_output=True,
                 text=True,
                 timeout=600,
+                encoding='utf-8',
                 cwd=os.path.join(current_dir, 'backend')
             )
 
@@ -62,6 +63,7 @@ def tester(platform, type):
                 capture_output=True,
                 text=True,
                 timeout=600,
+                encoding='utf-8',
                 cwd=puppeteer_dir
             )
 
