@@ -25,8 +25,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: 'Invalid platform, need ig or fb' });
     }
 
-    if (typeof type !== 'string' || !['A', 'B'].includes(type)) {
-        return res.status(400).json({ error: 'Invalid type, need A or B' });
+    if (typeof type !== 'string' || !['A', 'B', 'C'].includes(type)) {
+        return res.status(400).json({ error: 'Invalid type, need A or B or C' });
     }
 
     try {

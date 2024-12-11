@@ -219,12 +219,18 @@ def main():
     time.sleep(8)
     text = controller.get_latest_content()
     #print(text)
-    if "當 然 可 以" in text:
-       successCount += 1
-    elif "娛樂" in text:
-        successCount += 1
-    else:
-       failCount += 1
+    if responseType == 'A' or responseType == 'B':
+        if "當 然 可 以" in text:
+           successCount += 1
+        elif "娛樂" in text:
+            successCount += 1
+        else:
+           failCount += 1
+    elif responseType == 'C':
+        if "不 是 很" in text:
+            successCount += 1
+        else:
+            failCount += 1
    
     controller.send_message("hi")
     time.sleep(8)
@@ -237,6 +243,12 @@ def main():
         else:
             failCount += 1
     elif responseType == 'B':
+        conditions = ["呈 回", "+ Qag"]
+        if any(condition in text for condition in conditions):
+            successCount += 1
+        else:
+            failCount += 1
+    elif responseType == 'C':
         conditions = ["呈 回", "+ Qag"]
         if any(condition in text for condition in conditions):
             successCount += 1

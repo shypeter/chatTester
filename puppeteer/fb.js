@@ -307,6 +307,7 @@ class Monitor {
             const targetStr = 'Develope club\n您好';
             const targetStr2 = 'Develope club\n愛爾麗';
             const targetStr3 = 'Develope club\nHi!';
+            const targetStr4 = 'Develope club\n不是';
             const waitStr = 'You sent\n';
             while (this.isMonitoring) {
                 const debugInfo = await this.page.evaluate(() => {
@@ -346,6 +347,18 @@ class Monitor {
                         (this.responseType == 'B') &&
                         (
                             ((this.input == '介紹') && (msg.text.startsWith(targetStr) || msg.text.startsWith(targetStr2))) ||
+                            ((this.input == 'hi') && msg.text.startsWith(targetStr3))
+                        )
+                    ) {
+                        //pass
+                        this.resSuccess++;
+
+                        this.logMessage(`Type ${this.responseType} : ${this.input} - O`);
+                        await this.sendMessage('hi');
+                    } else if (
+                        (this.responseType == 'C') &&
+                        (
+                            ((this.input == '介紹') && msg.text.startsWith(targetStr4)) ||
                             ((this.input == 'hi') && msg.text.startsWith(targetStr3))
                         )
                     ) {

@@ -281,6 +281,7 @@ class Monitor {
             const targetStr = '阿羅哈您好';
             const targetStr2 = '阿羅哈愛爾麗';
             const targetStr3 = '阿羅哈Hi!';
+            const targetStr4 = '阿羅哈不是';
             const waitStr = '你傳送了IGD';
             while (this.isMonitoring) {
                 const debugInfo = await this.page.evaluate(() => {
@@ -322,6 +323,18 @@ class Monitor {
                         (this.responseType == 'B') &&
                         (
                             ((this.input == '介紹') && (msg.text.startsWith(targetStr) || msg.text.startsWith(targetStr2))) ||
+                            ((this.input == 'hi') && msg.text.startsWith(targetStr3))
+                        )
+                    ) {
+                        //pass
+                        this.resSuccess++;
+
+                        this.logMessage(`Type ${this.responseType} : ${this.input} - O`);
+                        await this.sendMessage('hi');
+                    } else if (
+                        (this.responseType == 'C') &&
+                        (
+                            ((this.input == '介紹') && msg.text.startsWith(targetStr4)) ||
                             ((this.input == 'hi') && msg.text.startsWith(targetStr3))
                         )
                     ) {
