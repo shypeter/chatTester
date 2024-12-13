@@ -223,7 +223,9 @@ def main():
         if "當 然 可 以" in text:
            successCount += 1
         elif "娛樂" in text:
-            successCount += 1
+           successCount += 1
+        elif "無 法 回 答" in text:
+           successCount += 1
         else:
            failCount += 1
     elif responseType == 'C':
